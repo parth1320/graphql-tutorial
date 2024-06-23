@@ -3,11 +3,20 @@ const { ApolloServer } = require("@apollo/server");
 const { expressMiddleware } = require("@apollo/server/express4");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const axios = require("axios");
 
 async function startApolloServer() {
   const app = express();
   const server = new ApolloServer({
     typeDefs: `
+      type User {
+        id: ID!
+        name: String!
+        email: String!
+        phone: String!
+        website: String!
+      }
+
         type Todo {
             id: ID!
             title: String!
@@ -16,9 +25,17 @@ async function startApolloServer() {
 
         type Query {
         getTodos: [Todo]
+        getAllUsers: [User]
         }
         `,
-    resolvers: {},
+    resolvers: {
+      Query: {
+        getTodos: async () =>
+          (await axios.get("https://jsonplaceholder.typicode.com/todos")).data,
+        getAllUsers: async () =>
+          (await axios.get("https://jsonplaceholder.typicode.com/users")).data,
+      },
+    },
   });
 
   app.use(cors());
